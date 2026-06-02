@@ -3,6 +3,7 @@
 
   const domainInput = document.getElementById('domain');
   const masterInput = document.getElementById('master');
+  const masterImage = document.getElementById('master-image');
   const generatedInput = document.getElementById('generated');
   const toggleGeneratedButton = document.getElementById('toggle-generated');
   const statusElement = document.getElementById('status');
@@ -109,6 +110,14 @@
     }
   }
 
+  function updateMasterImage() {
+    if (!masterImage || !globalThis.SGPImage || typeof globalThis.SGPImage.renderIdenticon !== 'function') {
+      return;
+    }
+    const rendered = globalThis.SGPImage.renderIdenticon(masterImage, masterInput.value);
+    masterImage.style.display = rendered ? 'block' : 'none';
+  }
+
   document.getElementById('generate').addEventListener('click', () => {
     generatePassword();
   });
@@ -120,6 +129,7 @@
     }
   });
 
+  masterInput.addEventListener('input', updateMasterImage);
   toggleGeneratedButton.addEventListener('click', () => {
     setGeneratedVisibility(generatedInput.type === 'password');
   });
@@ -173,4 +183,5 @@
 
   setGeneratedVisibility(false);
   initDomain();
+  updateMasterImage();
 })();
