@@ -68,8 +68,6 @@
 
   function setGeneratedVisibility(isVisible) {
     generatedInput.type = isVisible ? 'text' : 'password';
-    toggleGeneratedButton.textContent = isVisible ? 'Hide' : 'Show';
-    toggleGeneratedButton.setAttribute('aria-pressed', isVisible ? 'true' : 'false');
   }
 
   function generatePassword() {
