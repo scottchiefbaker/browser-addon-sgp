@@ -1,0 +1,9 @@
+{
+  "name": "browser-addon-sgp",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Classic SuperGenPass-compatible cross-browser extension",
+  "scripts": {
+    "test": "node --test"
+  }
+}
