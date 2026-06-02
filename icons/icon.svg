@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title>SuperGenPass extension icon</title>
+  <desc>Blue rounded square with a white ring and a gold keyhole.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1b5ccc"/>
+      <stop offset="100%" stop-color="#0e357a"/>
+    </linearGradient>
+  </defs>
+  <rect x="10" y="10" width="108" height="108" rx="28" fill="url(#bg)"/>
+  <circle cx="64" cy="64" r="36" fill="none" stroke="#f7faff" stroke-width="12"/>
+  <circle cx="64" cy="60" r="12" fill="#ffce54"/>
+  <rect x="56" y="64" width="16" height="24" rx="6" fill="#ffce54"/>
+</svg>

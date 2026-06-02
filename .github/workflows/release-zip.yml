@@ -1,0 +1,73 @@
+name: Release extension zip
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+      - '*.*.*'
+  release:
+    types:
+      - published
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set zip name
+        run: echo "ZIP_NAME=browser-addon-sgp-${GITHUB_REF_NAME}.zip" >> "$GITHUB_ENV"
+
+      - name: Build extension zip
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import zipfile
+
+          root = Path('.')
+          dist = root / 'dist'
+          dist.mkdir(exist_ok=True)
+          output = dist / Path('${{ env.ZIP_NAME }}')
+          include = ['manifest.json', 'popup', 'src']
+          files = []
+          timestamp = (2020, 1, 1, 0, 0, 0)
+
+          with zipfile.ZipFile(output, 'w', compression=zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
+              for relative in include:
+                  path = root / relative
+                  if path.is_file():
+                      files.append(path)
+                  else:
+                      files.extend(sorted(file for file in path.rglob('*') if file.is_file()))
+
+              files.extend(sorted((root / 'icons').glob('*.png')))
+
+              for file in files:
+                  archive_name = file.relative_to(root).as_posix()
+                  info = zipfile.ZipInfo(archive_name, date_time=timestamp)
+                  info.compress_type = zipfile.ZIP_DEFLATED
+                  info.external_attr = 0o100644 << 16
+                  with file.open('rb') as source:
+                      archive.writestr(info, source.read())
+          PY
+
+      - name: Upload extension artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-addon-sgp
+          path: dist/${{ env.ZIP_NAME }}
+          if-no-files-found: error
+
+      - name: Attach zip to GitHub release
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/${{ env.ZIP_NAME }}
