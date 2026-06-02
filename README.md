@@ -39,6 +39,10 @@ Run compatibility tests for the shared SGP core:
 npm test
 ```
 
+The extension icons live in `icons/` and are referenced directly from `manifest.json`.
+
+The release zip is produced by the GitHub Actions workflow at `.github/workflows/release-zip.yml`. It packages the runtime extension files (`manifest.json`, `popup/`, `src/`, and `icons/`) into a distributable zip and uploads it as a workflow artifact. Tag and published release runs also attach the zip to the GitHub release.
+
 ## Notes
 
 - The shared logic lives in `src/sgp-core.js`.

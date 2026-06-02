@@ -5,6 +5,7 @@
   const masterInput = document.getElementById('master');
   const masterImage = document.getElementById('master-image');
   const generatedInput = document.getElementById('generated');
+  const toggleGeneratedButton = document.getElementById('toggle-generated');
   const statusElement = document.getElementById('status');
 
   function setStatus(message) {
@@ -65,6 +66,12 @@
     });
   }
 
+  function setGeneratedVisibility(isVisible) {
+    generatedInput.type = isVisible ? 'text' : 'password';
+    toggleGeneratedButton.textContent = isVisible ? 'Hide' : 'Show';
+    toggleGeneratedButton.setAttribute('aria-pressed', isVisible ? 'true' : 'false');
+  }
+
   function generatePassword() {
     const domain = domainInput.value.trim();
     const masterPassword = masterInput.value;
@@ -82,6 +89,7 @@
     try {
       const generated = SGP.derivePassword(masterPassword, domain);
       generatedInput.value = generated;
+      setGeneratedVisibility(false);
       setStatus('Password generated locally.');
       return generated;
     } catch (error) {
@@ -103,7 +111,10 @@
   }
 
   function updateMasterImage() {
-    const rendered = SGPImage.renderIdenticon(masterImage, masterInput.value);
+    if (!masterImage || !globalThis.SGPImage || typeof globalThis.SGPImage.renderIdenticon !== 'function') {
+      return;
+    }
+    const rendered = globalThis.SGPImage.renderIdenticon(masterImage, masterInput.value);
     masterImage.style.display = rendered ? 'block' : 'none';
   }
 
@@ -119,6 +130,9 @@
   });
 
   masterInput.addEventListener('input', updateMasterImage);
+  toggleGeneratedButton.addEventListener('click', () => {
+    setGeneratedVisibility(generatedInput.type === 'password');
+  });
 
   document.getElementById('copy').addEventListener('click', async () => {
     const generated = generatedInput.value || generatePassword();
@@ -167,6 +181,7 @@
     }
   });
 
+  setGeneratedVisibility(false);
   initDomain();
   updateMasterImage();
 })();

@@ -21,10 +21,13 @@
 
       <button id="generate" type="button">Generate</button>
 
-      <label>
-        Site Password
-        <input id="generated" type="text" readonly />
-      </label>
+      <div class="field">
+        <label for="generated">Site Password</label>
+        <div class="generated-field">
+          <input id="generated" type="password" readonly />
+          <button id="toggle-generated" type="button" aria-controls="generated" aria-pressed="false">Show</button>
+        </div>
+      </div>
 
       <div class="actions">
         <button id="copy" type="button">Copy</button>
