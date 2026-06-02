@@ -1,0 +1,231 @@
+(function (root, factory) {
+  if (typeof module === 'object' && module.exports) {
+    module.exports = factory();
+  } else {
+    root.SGP = factory();
+  }
+})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+  const COMMON_SECOND_LEVEL_TLDS = new Set([
+    'ac', 'co', 'com', 'edu', 'gov', 'mil', 'net', 'nom', 'org'
+  ]);
+
+  const MD5_S = [
+    7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22,
+    5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20,
+    4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23,
+    6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21
+  ];
+
+  const MD5_K = Array.from({ length: 64 }, (_, index) => {
+    return Math.floor(Math.abs(Math.sin(index + 1)) * 0x100000000) >>> 0;
+  });
+
+  function leftRotate(value, amount) {
+    return ((value << amount) | (value >>> (32 - amount))) >>> 0;
+  }
+
+  function md5DigestBytes(bytesInput) {
+    const bytes = Array.from(bytesInput);
+    const bitLength = bytes.length * 8;
+    const bitLengthLow = bitLength >>> 0;
+    const bitLengthHigh = Math.floor(bitLength / 0x100000000) >>> 0;
+
+    bytes.push(0x80);
+    while ((bytes.length % 64) !== 56) {
+      bytes.push(0);
+    }
+
+    for (let i = 0; i < 4; i += 1) {
+      bytes.push((bitLengthLow >>> (8 * i)) & 0xff);
+    }
+
+    for (let i = 0; i < 4; i += 1) {
+      bytes.push((bitLengthHigh >>> (8 * i)) & 0xff);
+    }
+
+    let a0 = 0x67452301;
+    let b0 = 0xefcdab89;
+    let c0 = 0x98badcfe;
+    let d0 = 0x10325476;
+
+    for (let offset = 0; offset < bytes.length; offset += 64) {
+      const m = new Array(16);
+      for (let i = 0; i < 16; i += 1) {
+        const j = offset + (i * 4);
+        m[i] = (
+          bytes[j] |
+          (bytes[j + 1] << 8) |
+          (bytes[j + 2] << 16) |
+          (bytes[j + 3] << 24)
+        ) >>> 0;
+      }
+
+      let a = a0;
+      let b = b0;
+      let c = c0;
+      let d = d0;
+
+      for (let i = 0; i < 64; i += 1) {
+        let f;
+        let g;
+
+        if (i < 16) {
+          f = (b & c) | (~b & d);
+          g = i;
+        } else if (i < 32) {
+          f = (d & b) | (~d & c);
+          g = ((5 * i) + 1) % 16;
+        } else if (i < 48) {
+          f = b ^ c ^ d;
+          g = ((3 * i) + 5) % 16;
+        } else {
+          f = c ^ (b | ~d);
+          g = (7 * i) % 16;
+        }
+
+        const temp = d;
+        d = c;
+        c = b;
+
+        const sum = (a + f + MD5_K[i] + m[g]) >>> 0;
+        b = (b + leftRotate(sum, MD5_S[i])) >>> 0;
+        a = temp;
+      }
+
+      a0 = (a0 + a) >>> 0;
+      b0 = (b0 + b) >>> 0;
+      c0 = (c0 + c) >>> 0;
+      d0 = (d0 + d) >>> 0;
+    }
+
+    const output = [];
+    [a0, b0, c0, d0].forEach((word) => {
+      output.push(word & 0xff);
+      output.push((word >>> 8) & 0xff);
+      output.push((word >>> 16) & 0xff);
+      output.push((word >>> 24) & 0xff);
+    });
+
+    return output;
+  }
+
+  function toUtf8Bytes(value) {
+    return Array.from(new TextEncoder().encode(value));
+  }
+
+  function bytesToBase64(bytes) {
+    if (typeof btoa === 'function') {
+      let binary = '';
+      for (let i = 0; i < bytes.length; i += 1) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      return btoa(binary);
+    }
+
+    if (typeof Buffer !== 'undefined') {
+      return Buffer.from(bytes).toString('base64');
+    }
+
+    throw new Error('No base64 encoder available in this environment.');
+  }
+
+  function customBase64(value) {
+    return value.replace(/\+/g, '9').replace(/\//g, '8').replace(/=/g, 'A');
+  }
+
+  function hashMd5(value) {
+    const digest = md5DigestBytes(toUtf8Bytes(value));
+    return customBase64(bytesToBase64(digest));
+  }
+
+  function validatePassword(value, length) {
+    const password = value.substring(0, length);
+    return /^[a-z]/.test(password) && /[A-Z]/.test(password) && /[0-9]/.test(password);
+  }
+
+  function derivePassword(masterPassword, domain, options = {}) {
+    const hashRounds = Number.isInteger(options.hashRounds) ? options.hashRounds : 10;
+    const length = Number.isInteger(options.length) ? options.length : 10;
+    const secret = typeof options.secret === 'string' ? options.secret : '';
+
+    if (typeof masterPassword !== 'string' || typeof domain !== 'string') {
+      throw new Error('masterPassword and domain must be strings.');
+    }
+
+    if (!masterPassword.length && !secret.length) {
+      throw new Error('Combined password input must not be empty.');
+    }
+
+    if (length < 4 || length > 24) {
+      throw new Error('Password length must be between 4 and 24 characters.');
+    }
+
+    let generated = `${masterPassword}${secret}:${domain}`;
+    let remainingRounds = hashRounds;
+
+    while (remainingRounds > 0 || !validatePassword(generated, length)) {
+      generated = hashMd5(generated);
+      remainingRounds -= 1;
+    }
+
+    return generated.substring(0, length);
+  }
+
+  function extractHostname(value) {
+    const input = (value || '').trim();
+    if (!input) {
+      return '';
+    }
+
+    try {
+      return new URL(input).hostname.toLowerCase();
+    } catch (_) {
+      try {
+        return new URL(`https://${input}`).hostname.toLowerCase();
+      } catch (_) {
+        return input
+          .replace(/^\w+:\/\//, '')
+          .split('/')[0]
+          .split('@').pop()
+          .split(':')[0]
+          .toLowerCase();
+      }
+    }
+  }
+
+  function normalizeDomain(hostname) {
+    const host = (hostname || '').toLowerCase().replace(/\.$/, '');
+    if (!host) {
+      return '';
+    }
+
+    if (/^\d{1,3}(?:\.\d{1,3}){3}$/.test(host)) {
+      return host;
+    }
+
+    const parts = host.split('.').filter(Boolean);
+    if (parts.length <= 2) {
+      return host;
+    }
+
+    const tld = parts[parts.length - 1];
+    const secondLevel = parts[parts.length - 2];
+
+    if (tld.length === 2 && COMMON_SECOND_LEVEL_TLDS.has(secondLevel) && parts.length >= 3) {
+      return parts.slice(-3).join('.');
+    }
+
+    return parts.slice(-2).join('.');
+  }
+
+  function domainFromUrl(urlOrHost) {
+    return normalizeDomain(extractHostname(urlOrHost));
+  }
+
+  return {
+    derivePassword,
+    domainFromUrl,
+    extractHostname,
+    normalizeDomain,
+  };
+});

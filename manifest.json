@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "SuperGenPass Classic",
+  "version": "0.1.0",
+  "description": "Classic SuperGenPass-compatible local password generator.",
+  "action": {
+    "default_title": "SuperGenPass",
+    "default_popup": "popup/popup.html"
+  },
+  "permissions": [
+    "tabs",
+    "clipboardWrite"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": [
+        "src/content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}

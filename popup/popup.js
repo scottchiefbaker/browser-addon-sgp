@@ -1,0 +1,163 @@
+(function () {
+  const extensionApi = globalThis.browser || globalThis.chrome;
+
+  const domainInput = document.getElementById('domain');
+  const masterInput = document.getElementById('master');
+  const generatedInput = document.getElementById('generated');
+  const statusElement = document.getElementById('status');
+
+  function setStatus(message) {
+    statusElement.textContent = message;
+  }
+
+  function queryActiveTab() {
+    return new Promise((resolve, reject) => {
+      let settled = false;
+      const done = (tabs) => {
+        if (settled) {
+          return;
+        }
+        settled = true;
+        const error = extensionApi.runtime && extensionApi.runtime.lastError;
+        if (error) {
+          reject(new Error(error.message));
+          return;
+        }
+        resolve(tabs || []);
+      };
+
+      try {
+        const result = extensionApi.tabs.query({ active: true, currentWindow: true }, done);
+        if (result && typeof result.then === 'function') {
+          result.then(done).catch(reject);
+        }
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
+  function sendMessageToTab(tabId, message) {
+    return new Promise((resolve, reject) => {
+      let settled = false;
+      const done = (response) => {
+        if (settled) {
+          return;
+        }
+        settled = true;
+        const error = extensionApi.runtime && extensionApi.runtime.lastError;
+        if (error) {
+          reject(new Error(error.message));
+          return;
+        }
+        resolve(response || {});
+      };
+
+      try {
+        const result = extensionApi.tabs.sendMessage(tabId, message, done);
+        if (result && typeof result.then === 'function') {
+          result.then(done).catch(reject);
+        }
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
+  function generatePassword() {
+    const domain = domainInput.value.trim();
+    const masterPassword = masterInput.value;
+
+    if (!domain) {
+      setStatus('No domain available.');
+      return '';
+    }
+
+    if (!masterPassword) {
+      setStatus('Enter your master password.');
+      return '';
+    }
+
+    try {
+      const generated = SGP.derivePassword(masterPassword, domain);
+      generatedInput.value = generated;
+      setStatus('Password generated locally.');
+      return generated;
+    } catch (error) {
+      setStatus(error.message);
+      return '';
+    }
+  }
+
+  async function initDomain() {
+    try {
+      const [tab] = await queryActiveTab();
+      const tabUrl = tab && tab.url ? tab.url : '';
+      domainInput.value = SGP.domainFromUrl(tabUrl);
+      setStatus('Ready.');
+    } catch (_) {
+      domainInput.value = '';
+      setStatus('Open a regular tab to detect domain.');
+    }
+  }
+
+  document.getElementById('generate').addEventListener('click', () => {
+    generatePassword();
+  });
+
+  masterInput.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      generatePassword();
+    }
+  });
+
+  document.getElementById('copy').addEventListener('click', async () => {
+    const generated = generatedInput.value || generatePassword();
+    if (!generated) {
+      return;
+    }
+
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(generated);
+      } else {
+        generatedInput.select();
+        document.execCommand('copy');
+      }
+      setStatus('Copied to clipboard.');
+    } catch (_) {
+      setStatus('Copy failed.');
+    }
+  });
+
+  document.getElementById('fill').addEventListener('click', async () => {
+    const generated = generatedInput.value || generatePassword();
+    if (!generated) {
+      return;
+    }
+
+    try {
+      const [tab] = await queryActiveTab();
+      if (!tab || typeof tab.id !== 'number') {
+        setStatus('No active tab found.');
+        return;
+      }
+
+      const response = await sendMessageToTab(tab.id, {
+        type: 'FILL_PASSWORD',
+        password: generated,
+      });
+
+      if (response.filled > 0) {
+        setStatus(`Filled ${response.filled} password field(s).`);
+      } else {
+        setStatus('No editable password fields found.');
+      }
+    } catch (_) {
+      setStatus('Fill failed on this page.');
+    }
+  });
+
+  initDomain();
+})();
