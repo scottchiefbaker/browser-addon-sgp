@@ -44,3 +44,9 @@ button {
 	min-height : 1em;
 	font-size  : 12px;
 }
+
+#master-image {
+	display : none;
+	width   : 16px;
+	height  : 16px;
+}

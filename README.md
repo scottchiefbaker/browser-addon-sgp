@@ -6,6 +6,7 @@ Classic SuperGenPass-compatible cross-browser WebExtension (Chrome + Firefox).
 
 - Detects the current site domain in the popup.
 - Accepts a master password (never stored persistently).
+- Shows the original SuperGenPass-style identicon while typing the master password.
 - Derives the site password locally using classic SGP-compatible behavior.
 - Lets you copy the generated password or fill visible password fields in the active tab.
 

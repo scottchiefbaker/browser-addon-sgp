@@ -3,6 +3,7 @@
 
   const domainInput = document.getElementById('domain');
   const masterInput = document.getElementById('master');
+  const masterImage = document.getElementById('master-image');
   const generatedInput = document.getElementById('generated');
   const statusElement = document.getElementById('status');
 
@@ -101,6 +102,11 @@
     }
   }
 
+  function updateMasterImage() {
+    const rendered = SGPImage.renderIdenticon(masterImage, masterInput.value);
+    masterImage.style.display = rendered ? 'block' : 'none';
+  }
+
   document.getElementById('generate').addEventListener('click', () => {
     generatePassword();
   });
@@ -111,6 +117,8 @@
       generatePassword();
     }
   });
+
+  masterInput.addEventListener('input', updateMasterImage);
 
   document.getElementById('copy').addEventListener('click', async () => {
     const generated = generatedInput.value || generatePassword();
@@ -160,4 +168,5 @@
   });
 
   initDomain();
+  updateMasterImage();
 })();
