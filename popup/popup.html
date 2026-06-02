@@ -5,33 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>SuperGenPass</title>
     <link rel="stylesheet" href="popup.css" />
+    <link rel="stylesheet" href="bootstrap.min.css" />
   </head>
-  <body>
+  <body data-bs-theme="dark">
     <main>
       <label>
         Domain
-        <input id="domain" type="text" autocomplete="off" />
+        <input class="form-control" id="domain" type="text" autocomplete="off" />
       </label>
 
-      <label>
+      <label id="master-password">
         Master Password
-        <input id="master" type="password" autocomplete="off" autofocus />
+        <input class="form-control" id="master" type="password" autocomplete="off" autofocus />
+		<canvas id="master-image" width="16" height="16" aria-hidden="true"></canvas>
       </label>
-      <canvas id="master-image" width="16" height="16" aria-hidden="true"></canvas>
 
-      <button id="generate" type="button">Generate</button>
+      <button class="btn btn-primary" id="generate" type="button">Generate</button>
 
       <div class="field">
         <label for="generated">Site Password</label>
-        <div class="generated-field">
-          <input id="generated" type="password" readonly />
-          <button id="toggle-generated" type="button" aria-controls="generated" aria-pressed="false">Show</button>
+        <div class="input-group">
+          <input class="form-control" id="generated" type="password" readonly />
+          <button class="btn btn-secondary" id="toggle-generated" type="button" aria-controls="generated" aria-pressed="false">
+			<svg xmlns="http://www.w3.org/2000/svg" height="20px" width="20px" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+				<path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+			</svg></button>
         </div>
       </div>
 
       <div class="actions">
-        <button id="copy" type="button">Copy</button>
-        <button id="fill" type="button">Fill</button>
+        <button class="btn btn-info" id="copy" type="button">Copy</button>
+        <button class="btn btn-success" id="fill" type="button">Fill</button>
       </div>
 
       <p id="status" role="status" aria-live="polite"></p>
