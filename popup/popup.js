@@ -1,185 +1,188 @@
 (function () {
-  const extensionApi = globalThis.browser || globalThis.chrome;
+	const extensionApi = globalThis.browser || globalThis.chrome;
 
-  const domainInput = document.getElementById('domain');
-  const masterInput = document.getElementById('master');
-  const masterImage = document.getElementById('master-image');
-  const generatedInput = document.getElementById('generated');
-  const toggleGeneratedButton = document.getElementById('toggle-generated');
-  const statusElement = document.getElementById('status');
+	const domainInput = document.getElementById('domain');
+	const masterInput = document.getElementById('master');
+	const masterImage = document.getElementById('master-image');
+	const generatedInput = document.getElementById('generated');
+	const toggleGeneratedButton = document.getElementById('toggle-generated');
+	const statusElement = document.getElementById('status');
 
-  function setStatus(message) {
-    statusElement.textContent = message;
-  }
+	function setStatus(message) {
+		statusElement.textContent = message;
+	}
 
-  function queryActiveTab() {
-    return new Promise((resolve, reject) => {
-      let settled = false;
-      const done = (tabs) => {
-        if (settled) {
-          return;
-        }
-        settled = true;
-        const error = extensionApi.runtime && extensionApi.runtime.lastError;
-        if (error) {
-          reject(new Error(error.message));
-          return;
-        }
-        resolve(tabs || []);
-      };
+	function queryActiveTab() {
+		return new Promise((resolve, reject) => {
+			let settled = false;
+			const done = (tabs) => {
+				if (settled) {
+					return;
+				}
+				settled = true;
+				const error = extensionApi.runtime && extensionApi.runtime.lastError;
+				if (error) {
+					reject(new Error(error.message));
+					return;
+				}
+				resolve(tabs || []);
+			};
 
-      try {
-        const result = extensionApi.tabs.query({ active: true, currentWindow: true }, done);
-        if (result && typeof result.then === 'function') {
-          result.then(done).catch(reject);
-        }
-      } catch (error) {
-        reject(error);
-      }
-    });
-  }
+			try {
+				const result = extensionApi.tabs.query({ active: true, currentWindow: true }, done);
+				if (result && typeof result.then === 'function') {
+					result.then(done).catch(reject);
+				}
+			} catch (error) {
+				reject(error);
+			}
+		});
+	}
 
-  function sendMessageToTab(tabId, message) {
-    return new Promise((resolve, reject) => {
-      let settled = false;
-      const done = (response) => {
-        if (settled) {
-          return;
-        }
-        settled = true;
-        const error = extensionApi.runtime && extensionApi.runtime.lastError;
-        if (error) {
-          reject(new Error(error.message));
-          return;
-        }
-        resolve(response || {});
-      };
+	function sendMessageToTab(tabId, message) {
+		return new Promise((resolve, reject) => {
+			let settled = false;
+			const done = (response) => {
+				if (settled) {
+					return;
+				}
+				settled = true;
+				const error = extensionApi.runtime && extensionApi.runtime.lastError;
+				if (error) {
+					reject(new Error(error.message));
+					return;
+				}
+				resolve(response || {});
+			};
 
-      try {
-        const result = extensionApi.tabs.sendMessage(tabId, message, done);
-        if (result && typeof result.then === 'function') {
-          result.then(done).catch(reject);
-        }
-      } catch (error) {
-        reject(error);
-      }
-    });
-  }
+			try {
+				const result = extensionApi.tabs.sendMessage(tabId, message, done);
+				if (result && typeof result.then === 'function') {
+					result.then(done).catch(reject);
+				}
+			} catch (error) {
+				reject(error);
+			}
+		});
+	}
 
-  function setGeneratedVisibility(isVisible) {
-    generatedInput.type = isVisible ? 'text' : 'password';
-  }
+	function setGeneratedVisibility(isVisible) {
+		generatedInput.type = isVisible ? 'text' : 'password';
+	}
 
-  function generatePassword() {
-    const domain = domainInput.value.trim();
-    const masterPassword = masterInput.value;
+	function generatePassword() {
+		const domain = domainInput.value.trim();
+		const masterPassword = masterInput.value;
 
-    if (!domain) {
-      setStatus('No domain available.');
-      return '';
-    }
+		if (!domain) {
+			domainInput.classList.add('bg-warning');
+			setStatus('Please enter a domain');
+			return '';
+		} else {
+			domainInput.classList.remove('bg-warning');
+		}
 
-    if (!masterPassword) {
-      setStatus('Enter your master password.');
-      return '';
-    }
+		if (!masterPassword) {
+			setStatus('Enter your master password');
+			return '';
+		}
 
-    try {
-      const generated = SGP.derivePassword(masterPassword, domain);
-      generatedInput.value = generated;
-      setGeneratedVisibility(false);
-      setStatus('Password generated locally.');
-      return generated;
-    } catch (error) {
-      setStatus(error.message);
-      return '';
-    }
-  }
+		try {
+			const generated = SGP.derivePassword(masterPassword, domain);
+			generatedInput.value = generated;
+			setGeneratedVisibility(false);
+			setStatus('Password generated locally');
+			return generated;
+		} catch (error) {
+			setStatus(error.message);
+			return '';
+		}
+	}
 
-  async function initDomain() {
-    try {
-      const [tab] = await queryActiveTab();
-      const tabUrl = tab && tab.url ? tab.url : '';
-      domainInput.value = SGP.domainFromUrl(tabUrl);
-      setStatus('Ready.');
-    } catch (_) {
-      domainInput.value = '';
-      setStatus('Open a regular tab to detect domain.');
-    }
-  }
+	async function initDomain() {
+		try {
+			const [tab] = await queryActiveTab();
+			const tabUrl = tab && tab.url ? tab.url : '';
+			domainInput.value = SGP.domainFromUrl(tabUrl);
+			setStatus('Ready.');
+		} catch (_) {
+			domainInput.value = '';
+			setStatus('Open a regular tab to detect domain');
+		}
+	}
 
-  function updateMasterImage() {
-    if (!masterImage || !globalThis.SGPImage || typeof globalThis.SGPImage.renderIdenticon !== 'function') {
-      return;
-    }
-    const rendered = globalThis.SGPImage.renderIdenticon(masterImage, masterInput.value);
-    masterImage.style.display = rendered ? 'block' : 'none';
-  }
+	function updateMasterImage() {
+		if (!masterImage || !globalThis.SGPImage || typeof globalThis.SGPImage.renderIdenticon !== 'function') {
+			return;
+		}
+		const rendered = globalThis.SGPImage.renderIdenticon(masterImage, masterInput.value);
+		masterImage.style.display = rendered ? 'block' : 'none';
+	}
 
-  document.getElementById('generate').addEventListener('click', () => {
-    generatePassword();
-  });
+	document.getElementById('generate').addEventListener('click', () => {
+		generatePassword();
+	});
 
-  masterInput.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter') {
-      event.preventDefault();
-      generatePassword();
-    }
-  });
+	masterInput.addEventListener('keydown', (event) => {
+		if (event.key === 'Enter') {
+			event.preventDefault();
+			generatePassword();
+		}
+	});
 
-  masterInput.addEventListener('input', updateMasterImage);
-  toggleGeneratedButton.addEventListener('click', () => {
-    setGeneratedVisibility(generatedInput.type === 'password');
-  });
+	masterInput.addEventListener('input', updateMasterImage);
+	toggleGeneratedButton.addEventListener('click', () => {
+		setGeneratedVisibility(generatedInput.type === 'password');
+	});
 
-  document.getElementById('copy').addEventListener('click', async () => {
-    const generated = generatedInput.value || generatePassword();
-    if (!generated) {
-      return;
-    }
+	document.getElementById('copy').addEventListener('click', async () => {
+		const generated = generatedInput.value || generatePassword();
+		if (!generated) {
+			return;
+		}
 
-    try {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        await navigator.clipboard.writeText(generated);
-      } else {
-        generatedInput.select();
-        document.execCommand('copy');
-      }
-      setStatus('Copied to clipboard.');
-    } catch (_) {
-      setStatus('Copy failed.');
-    }
-  });
+		try {
+			if (navigator.clipboard && navigator.clipboard.writeText) {
+				await navigator.clipboard.writeText(generated);
+			} else {
+				generatedInput.select();
+				document.execCommand('copy');
+			}
+			setStatus('Copied to clipboard');
+		} catch (_) {
+			setStatus('Copy failed');
+		}
+	});
 
-  document.getElementById('fill').addEventListener('click', async () => {
-    const generated = generatedInput.value || generatePassword();
-    if (!generated) {
-      return;
-    }
+	document.getElementById('fill').addEventListener('click', async () => {
+		const generated = generatedInput.value || generatePassword();
+		if (!generated) {
+			return;
+		}
 
-    try {
-      const [tab] = await queryActiveTab();
-      if (!tab || typeof tab.id !== 'number') {
-        setStatus('No active tab found.');
-        return;
-      }
+		try {
+			const [tab] = await queryActiveTab();
+			if (!tab || typeof tab.id !== 'number') {
+				setStatus('No active tab found');
+				return;
+			}
 
-      const response = await sendMessageToTab(tab.id, {
-        type: 'FILL_PASSWORD',
-        password: generated,
-      });
+			const response = await sendMessageToTab(tab.id, {
+				type: 'FILL_PASSWORD',
+				password: generated,
+			});
 
-      if (response.filled > 0) {
-        setStatus(`Filled ${response.filled} password field(s).`);
-      } else {
-        setStatus('No editable password fields found.');
-      }
-    } catch (_) {
-      setStatus('Fill failed on this page.');
-    }
-  });
+			if (response.filled > 0) {
+				setStatus(`Filled ${response.filled} password field(s)`);
+			} else {
+				setStatus('No editable password fields found');
+			}
+		} catch (_) {
+			setStatus('Fill failed on this page');
+		}
+	});
 
-  setGeneratedVisibility(false);
-  initDomain();
-  updateMasterImage();
+	setGeneratedVisibility(false);
+	initDomain();
+	updateMasterImage();
 })();

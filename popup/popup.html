@@ -11,20 +11,20 @@
     <main>
       <label>
         Domain
-        <input class="form-control" id="domain" type="text" autocomplete="off" />
+		<input class="form-control form-control-sm" id="domain" type="text" autocomplete="off" required />
       </label>
 
       <label id="master-password">
         Master Password
-        <input class="form-control" id="master" type="password" autocomplete="off" autofocus />
-		<canvas id="master-image" width="16" height="16" aria-hidden="true"></canvas>
+			<input class="form-control form-control-sm" id="master" type="password" autocomplete="off" required autofocus />
+			<canvas id="master-image" width="16" height="16" aria-hidden="true"></canvas>
       </label>
 
-      <button class="btn btn-primary" id="generate" type="button">Generate</button>
+      <button class="btn btn-primary btn-sm" id="generate" type="button">Generate</button>
 
       <div class="field">
         <label for="generated">Site Password</label>
-        <div class="input-group">
+        <div class="input-group input-group-sm">
           <input class="form-control" id="generated" type="password" readonly />
           <button class="btn btn-secondary" id="toggle-generated" type="button" aria-controls="generated" aria-pressed="false">
 			<svg xmlns="http://www.w3.org/2000/svg" height="20px" width="20px" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
@@ -34,8 +34,8 @@
       </div>
 
       <div class="actions">
-        <button class="btn btn-info" id="copy" type="button">Copy</button>
-        <button class="btn btn-success" id="fill" type="button">Fill</button>
+        <button class="btn btn-info btn-sm" id="copy" type="button">Copy</button>
+        <button class="btn btn-success btn-sm" id="fill" type="button">Fill</button>
       </div>
 
       <p id="status" role="status" aria-live="polite"></p>
