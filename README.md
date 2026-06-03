@@ -1,6 +1,7 @@
-# browser-addon-sgp
+# SuperGenPass browser extension
 
-Classic SuperGenPass-compatible cross-browser WebExtension (Chrome + Firefox).
+[SuperGenPass](https://chriszarate.github.io/supergenpass/) cross-browser
+WebExtension (Chrome + Firefox).
 
 ## What it does
 
