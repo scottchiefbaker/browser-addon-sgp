@@ -227,5 +227,6 @@
     domainFromUrl,
     extractHostname,
     normalizeDomain,
+    md5DigestBytes,
   };
 });
