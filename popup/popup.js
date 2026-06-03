@@ -172,7 +172,9 @@
 				password: generated,
 			});
 
-			if (response.filled > 0) {
+			if (response.filled == 1) {
+				setStatus("Filled 1 password field");
+			} else if (response.filled > 1) {
 				setStatus(`Filled ${response.filled} password field(s)`);
 			} else {
 				setStatus('No editable password fields found');
