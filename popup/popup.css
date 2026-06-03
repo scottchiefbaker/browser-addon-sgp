@@ -53,3 +53,7 @@ button {
 	top      : 26px;
 	right    : 10px;
 }
+
+#color_box_wrapper > div {
+	height: 8px;
+}

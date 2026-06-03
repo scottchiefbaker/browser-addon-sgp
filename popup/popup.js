@@ -115,8 +115,49 @@
 		if (!masterImage || !globalThis.SGPImage || typeof globalThis.SGPImage.renderIdenticon !== 'function') {
 			return;
 		}
+
+		update_color_box(masterInput.value);
+
 		const rendered = globalThis.SGPImage.renderIdenticon(masterImage, masterInput.value);
 		masterImage.style.display = rendered ? 'block' : 'none';
+	}
+
+	function update_color_box(input) {
+
+		if (!input) {
+			return "";
+		}
+
+		var nums = SGP.md5DigestBytes(input);
+		var elem = document.getElementById('color_box_wrapper');
+		var rgb  = 0;
+
+		// Show the color box
+		elem.classList.remove('d-none');
+
+		for (i = 0; i < elem.children.length; i++) {
+			var x = elem.children[i];
+
+			// build an RGB color from three of the bytes of the hash
+			rgb = nums.shift();
+			rgb = rgb << 8;
+			rgb = rgb | nums.shift();
+			rgb = rgb << 8;
+			rgb = rgb | nums.shift();
+
+			var color_str = intToColor(rgb);
+			x.setAttribute("style", "background-color: " + color_str);
+
+			console.log("Setting %d to %s", i, color_str);
+		}
+
+	}
+
+	function intToColor(value) {
+		// Keep only the low 24 bits
+		value &= 0xFFFFFF;
+
+		return '#' + value.toString(16).padStart(6, '0');
 	}
 
 	document.getElementById('generate').addEventListener('click', () => {
