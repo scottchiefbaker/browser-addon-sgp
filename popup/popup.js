@@ -148,7 +148,7 @@
 			var color_str = intToColor(rgb);
 			x.setAttribute("style", "background-color: " + color_str);
 
-			console.log("Setting %d to %s", i, color_str);
+			//console.log("Setting %d to %s", i, color_str);
 		}
 
 	}
