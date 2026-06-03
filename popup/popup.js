@@ -195,7 +195,9 @@
 		}
 	});
 
-	document.getElementById('fill').addEventListener('click', async () => {
+	document.getElementById('fill').addEventListener('click', fill_inputs);
+
+	async function fill_inputs() {
 		const generated = generatedInput.value || generatePassword();
 		if (!generated) {
 			return;
@@ -223,7 +225,7 @@
 		} catch (_) {
 			setStatus('Fill failed on this page');
 		}
-	});
+	}
 
 	setGeneratedVisibility(false);
 	initDomain();
