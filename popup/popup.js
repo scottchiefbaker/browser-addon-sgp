@@ -162,9 +162,19 @@
 
 	document.getElementById('generate').addEventListener('click', () => {
 		generatePassword();
+
+		// Swap generate -> copy buttons
+		document.getElementById('generate').classList.add('d-none');
+		document.getElementById('copy').classList.remove('d-none');
+
+		fill_inputs();
 	});
 
 	masterInput.addEventListener('keydown', (event) => {
+		// On keydown show the generate button again
+		document.getElementById('generate').classList.remove('d-none');
+		document.getElementById('copy').classList.add('d-none');
+
 		if (event.key === 'Enter') {
 			event.preventDefault();
 			generatePassword();
