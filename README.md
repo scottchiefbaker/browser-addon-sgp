@@ -6,9 +6,8 @@ Classic SuperGenPass-compatible cross-browser WebExtension (Chrome + Firefox).
 
 - Detects the current site domain in the popup.
 - Accepts a master password (never stored persistently).
-- Shows the original SuperGenPass-style identicon while typing the master password.
+- Shows the SuperGenPass-style identicon while typing the master password.
 - Derives the site password locally using classic SGP-compatible behavior.
-- Lets you copy the generated password or fill visible password fields in the active tab.
 
 ## Security and privacy
 
@@ -31,17 +30,11 @@ Classic SuperGenPass-compatible cross-browser WebExtension (Chrome + Firefox).
 2. Click **Load Temporary Add-on**.
 3. Select this repository's `manifest.json`.
 
-## Development checks
-
-Run compatibility tests for the shared SGP core:
+## Build a developer addon
 
 ```bash
-npm test
+zip -r browser-addon-sgp.zip manifest.json icons/ popup/ src/
 ```
-
-The extension icons live in `icons/` and are referenced directly from `manifest.json`.
-
-The release zip is produced by the GitHub Actions workflow at `.github/workflows/release-zip.yml`. It packages the runtime extension files (`manifest.json`, `popup/`, `src/`, and `icons/`) into a distributable zip and uploads it as a workflow artifact. Tag and published release runs also attach the zip to the GitHub release.
 
 ## Notes
 
