@@ -33,7 +33,7 @@ Classic SuperGenPass-compatible cross-browser WebExtension (Chrome + Firefox).
 ## Build a developer addon
 
 ```bash
-zip -r browser-addon-sgp.zip manifest.json icons/ popup/ src/
+perl build-release.pl
 ```
 
 ## Notes
