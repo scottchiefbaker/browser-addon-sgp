@@ -38,6 +38,20 @@
 		return customBase64(bytesToBase64(digest));
 	}
 
+	// Generate the SGP password based on the provided input
+	function generate_sha1_sgp(value) {
+		const digest = sha1.digest(value);
+
+		return customBase64(bytesToBase64(digest));
+	}
+
+	// Generate the SGP password based on the provided input
+	function generate_sha256_sgp(value) {
+		const digest = sha256.digest(value);
+
+		return customBase64(bytesToBase64(digest));
+	}
+
 	// A valid SGP password starts with a lowercase letter, contains an uppercase letter
 	// and a digit
 	function validatePassword(value, length) {
@@ -50,7 +64,7 @@
 		const hashRounds = Number.isInteger(options.hashRounds) ? options.hashRounds : 10;
 		const length     = Number.isInteger(options.length)     ? options.length     : 10;
 		const secret     = typeof options.secret === 'string'   ? options.secret     : '';
-		const hash_algo  = typeof options.algo   === 'string'   ? options.algo       : 'MD5';
+		const hash_algo  = typeof options.algo   === 'string'   ? options.algo       : 'md5';
 
 		if (typeof masterPassword !== 'string' || typeof domain !== 'string') {
 			throw new Error('masterPassword and domain must be strings.');
@@ -70,7 +84,14 @@
 		// Loop for hashRounds number of times, and then keep going if the password
 		// isn't in the correct format
 		while (remainingRounds > 0 || !validatePassword(generated, length)) {
-			generated        = generate_md5_sgp(generated);
+			if (hash_algo === "sha1") {
+				generated = generate_sha1_sgp(generated);
+			} else if (hash_algo === "sha256") {
+				generated = generate_sha256_sgp(generated);
+			} else {
+				generated = generate_md5_sgp(generated);
+			}
+
 			remainingRounds -= 1;
 		}
 
