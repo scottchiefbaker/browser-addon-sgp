@@ -168,16 +168,28 @@
 		generatePassword();
 
 		// Swap generate -> copy buttons
-		document.getElementById('generate').classList.add('d-none');
-		document.getElementById('copy').classList.remove('d-none');
+		show_generate_button();
 
+		// Find any <input type="password"> tags and fill them in
 		fill_inputs();
 	});
 
-	masterInput.addEventListener('keydown', (event) => {
-		// On keydown show the generate button again
+	function show_generate_button() {
+		document.getElementById('generate').classList.add('d-none');
+		document.getElementById('copy').classList.remove('d-none');
+	}
+
+	function show_copy_button() {
 		document.getElementById('generate').classList.remove('d-none');
 		document.getElementById('copy').classList.add('d-none');
+	}
+
+	domainInput.addEventListener('keydown', (event) => {
+		show_copy_button();
+	});
+
+	masterInput.addEventListener('keydown', (event) => {
+		show_copy_button();
 
 		if (event.key === 'Enter') {
 			event.preventDefault();
