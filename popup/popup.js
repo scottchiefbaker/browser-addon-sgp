@@ -1,12 +1,12 @@
 (function () {
 	const extensionApi = globalThis.browser || globalThis.chrome;
 
-	const domainInput = document.getElementById('domain');
-	const masterInput = document.getElementById('master');
-	const masterImage = document.getElementById('master-image');
-	const generatedInput = document.getElementById('generated');
+	const domainInput           = document.getElementById('domain');
+	const masterInput           = document.getElementById('master');
+	const masterImage           = document.getElementById('master-image');
+	const generatedInput        = document.getElementById('generated');
 	const toggleGeneratedButton = document.getElementById('toggle-generated');
-	const statusElement = document.getElementById('status');
+	const statusElement         = document.getElementById('status');
 
 	function setStatus(message) {
 		statusElement.textContent = message;
