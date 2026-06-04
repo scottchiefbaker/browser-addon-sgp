@@ -20,7 +20,7 @@
     return Math.floor(Math.abs(Math.sin(index + 1)) * 0x100000000) >>> 0;
   });
 
-  function leftRotate(value, amount) {
+  function rotl32(value, amount) {
     return ((value << amount) | (value >>> (32 - amount))) >>> 0;
   }
 
@@ -88,7 +88,7 @@
         c = b;
 
         const sum = (a + f + MD5_K[i] + m[g]) >>> 0;
-        b = (b + leftRotate(sum, MD5_S[i])) >>> 0;
+        b = (b + rotl32(sum, MD5_S[i])) >>> 0;
         a = temp;
       }
 
