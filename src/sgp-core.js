@@ -155,6 +155,7 @@
     const hashRounds = Number.isInteger(options.hashRounds) ? options.hashRounds : 10;
     const length     = Number.isInteger(options.length)     ? options.length     : 10;
     const secret     = typeof options.secret === 'string'   ? options.secret     : '';
+    const hash_algo  = typeof options.algo   === 'string'   ? options.algo       : 'MD5';
 
     if (typeof masterPassword !== 'string' || typeof domain !== 'string') {
       throw new Error('masterPassword and domain must be strings.');
