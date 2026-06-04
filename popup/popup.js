@@ -124,13 +124,17 @@
 
 	function update_color_box(input) {
 
-		if (!input) {
-			return "";
-		}
-
-		var nums = SGP.md5DigestBytes(input);
+		var nums = sha256.digest(input);
 		var elem = document.getElementById('color_box_wrapper');
 		var rgb  = 0;
+
+		// Set the color box to black if there is NO input
+		if (!input) {
+			const divs = document.querySelectorAll('#color_box_wrapper > div');
+			divs.forEach(div => div.style.backgroundColor = 'black');
+
+			return "";
+		}
 
 		// Show the color box
 		elem.classList.remove('d-none');
