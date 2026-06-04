@@ -109,6 +109,7 @@
     return output;
   }
 
+  // Convert a string to an array of UTF-8 bytes
   function toUtf8Bytes(value) {
     return Array.from(new TextEncoder().encode(value));
   }
@@ -129,24 +130,31 @@
     throw new Error('No base64 encoder available in this environment.');
   }
 
+  // SGP passwords are alpha-numeric only. Base64 uses: '+', '-', '=' so we
+  // map those to other values
   function customBase64(value) {
     return value.replace(/\+/g, '9').replace(/\//g, '8').replace(/=/g, 'A');
   }
 
-  function hashMd5(value) {
+  // Generate the SGP password based on the provided input
+  function generate_md5_sgp(value) {
     const digest = md5DigestBytes(toUtf8Bytes(value));
+
     return customBase64(bytesToBase64(digest));
   }
 
+  // A valid SGP password starts with a lowercase letter, contains an uppercase letter
+  // and a digit
   function validatePassword(value, length) {
     const password = value.substring(0, length);
+
     return /^[a-z]/.test(password) && /[A-Z]/.test(password) && /[0-9]/.test(password);
   }
 
   function derivePassword(masterPassword, domain, options = {}) {
     const hashRounds = Number.isInteger(options.hashRounds) ? options.hashRounds : 10;
-    const length = Number.isInteger(options.length) ? options.length : 10;
-    const secret = typeof options.secret === 'string' ? options.secret : '';
+    const length     = Number.isInteger(options.length)     ? options.length     : 10;
+    const secret     = typeof options.secret === 'string'   ? options.secret     : '';
 
     if (typeof masterPassword !== 'string' || typeof domain !== 'string') {
       throw new Error('masterPassword and domain must be strings.');
@@ -163,8 +171,10 @@
     let generated = `${masterPassword}${secret}:${domain}`;
     let remainingRounds = hashRounds;
 
+    // Loop for hashRounds number of times, and then keep going if the password
+    // isn't in the correct format
     while (remainingRounds > 0 || !validatePassword(generated, length)) {
-      generated = hashMd5(generated);
+      generated        = generate_md5_sgp(generated);
       remainingRounds -= 1;
     }
 
