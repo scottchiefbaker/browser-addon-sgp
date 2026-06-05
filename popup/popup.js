@@ -170,28 +170,28 @@
 		generatePassword();
 
 		// Swap generate -> copy buttons
-		show_generate_button();
+		show_copy_button();
 
 		// Find any <input type="password"> tags and fill them in
 		fill_inputs();
 	});
 
-	function show_generate_button() {
+	function show_copy_button() {
 		document.getElementById('generate').classList.add('d-none');
 		document.getElementById('copy').classList.remove('d-none');
 	}
 
-	function show_copy_button() {
+	function show_generate_button() {
 		document.getElementById('generate').classList.remove('d-none');
 		document.getElementById('copy').classList.add('d-none');
 	}
 
 	domainInput.addEventListener('keydown', (event) => {
-		show_copy_button();
+		show_generate_button();
 	});
 
 	masterInput.addEventListener('keydown', (event) => {
-		show_copy_button();
+		show_generate_button();
 
 		if (event.key === 'Enter') {
 			event.preventDefault();
