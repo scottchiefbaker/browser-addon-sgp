@@ -114,14 +114,15 @@
 	function updateMasterImage() {
 		update_color_box(masterInput.value);
 
-		return; // This function is a NO-OP for now
+		return;
 
-		if (!masterImage || !globalThis.SGPImage || typeof globalThis.SGPImage.renderIdenticon !== 'function') {
-			return;
-		}
+		// FIXME: The image/logo stuff is disabled for now...
+		//if (!masterImage || !globalThis.SGPImage || typeof globalThis.SGPImage.renderIdenticon !== 'function') {
+		//    return;
+		//}
 
-		const rendered = globalThis.SGPImage.renderIdenticon(masterImage, masterInput.value);
-		masterImage.style.display = rendered ? 'block' : 'none';
+		//const rendered = globalThis.SGPImage.renderIdenticon(masterImage, masterInput.value);
+		//masterImage.style.display = rendered ? 'block' : 'none';
 	}
 
 	function update_color_box(input) {
