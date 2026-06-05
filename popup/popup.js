@@ -189,14 +189,21 @@
 
 	domainInput.addEventListener('keydown', (event) => {
 		show_generate_button();
+		setStatus("");
 	});
 
 	masterInput.addEventListener('keydown', (event) => {
-		show_generate_button();
-
+		// Enter sends the password to the tab
 		if (event.key === 'Enter') {
 			event.preventDefault();
+
 			generatePassword();
+			show_copy_button();
+			fill_inputs();
+		// Everything else is an update of the pwd
+		} else {
+			show_generate_button();
+			setStatus("");
 		}
 	});
 
