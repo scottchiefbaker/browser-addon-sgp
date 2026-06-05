@@ -71,8 +71,8 @@
 	}
 
 	function generatePassword() {
-		const domain = domainInput.value.trim();
-		const masterPassword = masterInput.value;
+		const domain     = domainInput.value.trim();
+		const master_pwd = masterInput.value;
 
 		if (!domain) {
 			domainInput.classList.add('bg-warning');
@@ -82,13 +82,13 @@
 			domainInput.classList.remove('bg-warning');
 		}
 
-		if (!masterPassword) {
+		if (!master_pwd) {
 			setStatus('Enter your master password');
 			return '';
 		}
 
 		try {
-			const generated = SGP.derivePassword(masterPassword, domain);
+			const generated = SGP.derivePassword(master_pwd, domain);
 			generatedInput.value = generated;
 			setGeneratedVisibility(false);
 			setStatus('Password generated locally');
@@ -112,11 +112,13 @@
 	}
 
 	function updateMasterImage() {
+		update_color_box(masterInput.value);
+
+		return; // This function is a NO-OP for now
+
 		if (!masterImage || !globalThis.SGPImage || typeof globalThis.SGPImage.renderIdenticon !== 'function') {
 			return;
 		}
-
-		update_color_box(masterInput.value);
 
 		const rendered = globalThis.SGPImage.renderIdenticon(masterImage, masterInput.value);
 		masterImage.style.display = rendered ? 'block' : 'none';
@@ -221,6 +223,39 @@
 		}
 	});
 
+	async function load_saved_password() {
+		//var pwd = localStorage.getItem('sgp_master_pwd') ?? "";
+		var x     = await browser.storage.session.get(['sgp_master_pwd']);
+		var pwd   = x.sgp_master_pwd ?? "";
+
+		masterInput.value = pwd;
+		update_color_box(pwd);
+	}
+
+	document.getElementById('save_button').addEventListener('click', save_master_pwd);
+
+	async function save_master_pwd() {
+		var pwd  = masterInput.value;
+		var elem = document.getElementById('save_button');
+		var ret  = 0;
+
+		try {
+			//localStorage.setItem('sgp_master_pwd', pwd);
+			await browser.storage.session.set({ sgp_master_pwd: pwd});
+			elem.classList.remove('bg-secondary');
+			elem.classList.add('bg-success');
+
+			ret = 1;
+		} catch(err) {
+			console.log(err);
+
+			elem.classList.remove('bg-secondary');
+			elem.classList.add('bg-danger');
+		}
+
+		return ret;
+	}
+
 	document.getElementById('fill').addEventListener('click', fill_inputs);
 
 	async function fill_inputs() {
@@ -256,4 +291,6 @@
 	setGeneratedVisibility(false);
 	initDomain();
 	updateMasterImage();
+	load_saved_password();
+
 })();

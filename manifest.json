@@ -22,6 +22,7 @@
 	},
 	"permissions": [
 		"tabs",
+		"storage",
 		"clipboardWrite"
 	],
 	"content_scripts": [
@@ -46,6 +47,13 @@
 				]
 			},
 			"strict_min_version": "58.0"
+		}
+	},
+	"commands": {
+		"_execute_browser_action": {
+			"suggested_key": {
+				"default": "Ctrl+0"
+			}
 		}
 	}
 }
