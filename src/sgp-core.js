@@ -25,7 +25,7 @@
 		throw new Error('No base64 encoder available in this environment.');
 	}
 
-	// SGP passwords are alpha-numeric only. Base64 uses: '+', '-', '=' so we
+	// SGP passwords are alpha-numeric only. Base64 uses: '+', '/', '=' so we
 	// map those to other values
 	function customBase64(value) {
 		return value.replace(/\+/g, '9').replace(/\//g, '8').replace(/=/g, 'A');
