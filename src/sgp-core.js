@@ -81,6 +81,9 @@
 		let generated       = `${masterPassword}${secret}:${domain}`;
 		let remainingRounds = hashRounds;
 
+		var total = 0;
+		var start = get_unixtime_ms();
+
 		// Loop for hashRounds number of times, and then keep going if the password
 		// isn't in the correct format
 		while (remainingRounds > 0 || !validatePassword(generated, length)) {
@@ -93,7 +96,11 @@
 			}
 
 			remainingRounds -= 1;
+			total++;
 		}
+
+		var end = get_unixtime_ms();
+		console.log("Generated password in %d iterations in %d ms", total, end - start);
 
 		return generated.substring(0, length);
 	}
@@ -147,6 +154,13 @@
 
 	function domainFromUrl(urlOrHost) {
 		return normalizeDomain(extractHostname(urlOrHost));
+	}
+
+	function get_unixtime_ms() {
+		var date_obj = new Date;
+		var ret      = date_obj.getTime();
+
+		return ret;
 	}
 
 	return {
