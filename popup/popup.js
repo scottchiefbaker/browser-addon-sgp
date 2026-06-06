@@ -232,6 +232,16 @@
 	});
 
 	async function load_saved_password() {
+		// If we don't have the browser object we're not in extension mode
+		try {
+			browser
+		} catch {
+			// Hide the save button
+			var elem = document.getElementById('save_button');
+			elem.classList.add('d-none');
+			return "";
+		}
+
 		//var pwd = localStorage.getItem('sgp_master_pwd') ?? "";
 		var x     = await browser.storage.session.get(['sgp_master_pwd']);
 		var pwd   = x.sgp_master_pwd ?? "";
@@ -243,6 +253,13 @@
 	document.getElementById('save_button').addEventListener('click', save_master_pwd);
 
 	async function save_master_pwd() {
+		// If we don't have the browser object we're not in extension mode
+		try {
+			browser
+		} catch {
+			return "";
+		}
+
 		var pwd  = masterInput.value;
 		var elem = document.getElementById('save_button');
 		var ret  = 0;
