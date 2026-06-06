@@ -25,6 +25,37 @@
 		throw new Error('No base64 encoder available in this environment.');
 	}
 
+	function encode_base85(data) {
+		const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#$%&()*+-;<=>?@^_`{|}~';
+
+		// Convert string to byte array if needed
+		const bytes = typeof data === 'string'
+			? Uint8Array.from(data, c => c.charCodeAt(0))
+			: data;
+
+		const pad = (4 - bytes.length % 4) % 4;
+		const padded = new Uint8Array(bytes.length + pad);
+		padded.set(bytes);
+
+		let result = '';
+		for (let i = 0; i < padded.length; i += 4) {
+			let val = (padded[i] * 0x1000000)   // avoid sign bit issues with
+				+ (padded[i+1] << 16)
+				+ (padded[i+2] << 8)
+				+  padded[i+3];
+
+			let chunk = '';
+			for (let j = 0; j < 5; j++) {
+				chunk = chars[val % 85] + chunk;
+				val = Math.floor(val / 85);
+			}
+			result += chunk;
+		}
+
+		// Trim padding characters
+		return pad > 0 ? result.slice(0, -pad) : result;
+	}
+
 	// SGP passwords are alpha-numeric only. Base64 uses: '+', '/', '=' so we
 	// map those to other values
 	function customBase64(value) {
@@ -32,39 +63,78 @@
 	}
 
 	// Generate the SGP password based on the provided input
-	function generate_md5_sgp(value) {
+	function generate_md5_sgp(value, use_special) {
 		const digest = md5.digest(value);
+		var ret      = false;
 
-		return customBase64(bytesToBase64(digest));
+		if (use_special) {
+			var digest_str = String.fromCharCode(...digest);
+			ret            = encode_base85(digest_str);
+		} else {
+			ret = customBase64(bytesToBase64(digest));
+		}
+
+		return ret;
 	}
 
 	// Generate the SGP password based on the provided input
-	function generate_sha1_sgp(value) {
+	function generate_sha1_sgp(value, use_special) {
 		const digest = sha1.digest(value);
+		var ret      = false;
 
-		return customBase64(bytesToBase64(digest));
+		if (use_special) {
+			var digest_str = String.fromCharCode(...digest);
+			ret            = encode_base85(digest_str);
+		} else {
+			ret = customBase64(bytesToBase64(digest));
+		}
+
+		return ret;
 	}
 
 	// Generate the SGP password based on the provided input
-	function generate_sha256_sgp(value) {
+	function generate_sha256_sgp(value, use_special) {
 		const digest = sha256.digest(value);
+		var ret      = false;
 
-		return customBase64(bytesToBase64(digest));
+		if (use_special) {
+			var digest_str = String.fromCharCode(...digest);
+			ret            = encode_base85(digest_str);
+		} else {
+			ret = customBase64(bytesToBase64(digest));
+		}
+
+		return ret;
 	}
 
 	// A valid SGP password starts with a lowercase letter, contains an uppercase letter
 	// and a digit
-	function validatePassword(value, length) {
+	function validatePassword(value, length, special) {
 		const password = value.substring(0, length);
+		var ret        = false;
 
-		return /^[a-z]/.test(password) && /[A-Z]/.test(password) && /[0-9]/.test(password);
+		if (special) {
+			ret = /^[a-z]/.test(password) && /[A-Z]/.test(password) && /[0-9]/.test(password) && /\W/.test(password);
+		} else {
+			ret = /^[a-z]/.test(password) && /[A-Z]/.test(password) && /[0-9]/.test(password);
+		}
+
+		return ret;
 	}
 
 	function derivePassword(masterPassword, domain, options = {}) {
-		const hashRounds = Number.isInteger(options.hashRounds) ? options.hashRounds : 10;
-		const length     = Number.isInteger(options.length)     ? options.length     : 10;
-		const secret     = typeof options.secret === 'string'   ? options.secret     : '';
-		const hash_algo  = typeof options.algo   === 'string'   ? options.algo       : 'md5';
+		var hashRounds  = Number.isInteger(options.hashRounds)  ? options.hashRounds : 10;
+		var length      = Number.isInteger(options.length)      ? options.length     : 10;
+		var secret      = typeof options.secret  === 'string'   ? options.secret     : '';
+		var hash_algo   = typeof options.algo    === 'string'   ? options.algo       : 'md5';
+		var use_special = options.special ?? 0;
+		var mode        = options.mode    ?? 0;
+
+		if (mode === 2) {
+			length      = 15;
+			hash_algo   = 'sha256';
+			use_special = 1;
+		}
 
 		if (typeof masterPassword !== 'string' || typeof domain !== 'string') {
 			throw new Error('masterPassword and domain must be strings.');
@@ -86,13 +156,18 @@
 
 		// Loop for hashRounds number of times, and then keep going if the password
 		// isn't in the correct format
-		while (remainingRounds > 0 || !validatePassword(generated, length)) {
+		while (remainingRounds > 0 || !validatePassword(generated, length, use_special)) {
 			if (hash_algo === "sha1") {
-				generated = generate_sha1_sgp(generated);
+				generated = generate_sha1_sgp(generated, use_special);
 			} else if (hash_algo === "sha256") {
-				generated = generate_sha256_sgp(generated);
+				generated = generate_sha256_sgp(generated, use_special);
 			} else {
-				generated = generate_md5_sgp(generated);
+				generated = generate_md5_sgp(generated, use_special);
+			}
+
+			if (total > 100) {
+				console.log("Too many iterations");
+				return "";
 			}
 
 			remainingRounds -= 1;
@@ -168,5 +243,6 @@
 		domainFromUrl,
 		extractHostname,
 		normalizeDomain,
+		validatePassword,
 	};
 });
