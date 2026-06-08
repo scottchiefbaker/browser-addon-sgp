@@ -167,7 +167,7 @@
 		return '#' + value.toString(16).padStart(6, '0');
 	}
 
-	document.getElementById('generate').addEventListener('click', () => {
+	function create_and_fill_password() {
 		generatePassword();
 
 		// Swap generate -> copy buttons
@@ -175,6 +175,10 @@
 
 		// Find any <input type="password"> tags and fill them in
 		fill_inputs();
+	}
+
+	document.getElementById('generate').addEventListener('click', () => {
+		create_and_fill_password();
 	});
 
 	function show_copy_button() {
@@ -197,9 +201,7 @@
 		if (event.key === 'Enter') {
 			event.preventDefault();
 
-			generatePassword();
-			show_copy_button();
-			fill_inputs();
+			create_and_fill_password();
 		// Everything else is an update of the pwd
 		} else {
 			show_generate_button();
